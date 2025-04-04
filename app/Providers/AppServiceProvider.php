@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use Carbon\CarbonInterval;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
@@ -31,7 +33,9 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes($noProduction);
 
         DB::whenQueryingForLongerThan(500, function (Connection $connection) {
-            // TODO 3rd lesson
+            logger()
+                ->channel('telegram')
+                ->debug('whenQueryingForLongerThan' . $connection->query()->toRawSql());
         });
 
         RateLimiter::for('global', function (Request $request) {
@@ -41,5 +45,15 @@ class AppServiceProvider extends ServiceProvider
                     return response('Custom response...', 429, $headers);
                 });
         });
+
+        $kernel     = app(Kernel::class);
+        $kernel->whenRequestLifecycleIsLongerThan(
+            CarbonInterval::seconds(4),
+            function () {
+                logger()
+                    ->channel('telegram')
+                    ->debug('whenRequestLifecycleIsLongerThan' . request()->url());
+            }
+        );
     }
 }

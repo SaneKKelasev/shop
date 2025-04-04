@@ -127,6 +127,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'telegram' => [
+            'driver'    => 'custom',
+            'via'       => \App\Logging\Telegram\TelegramLoggerFactory::class,
+            'chat_id'   => -4655323637,
+            'token'     => '7332856918:AAFoTMm2uvVUIsSXcQkMtaa8P1KBFecRClE'
+        ],
     ],
 
 ];
